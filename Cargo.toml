@@ -3,5 +3,7 @@ name = "tink"
 version = "0.0.0"
 authors = ["Jake <jake@jakeswenson.com>"]
 edition = "2018"
+description = "A Rust encryption library compatible with googles tink encryption library"
+license = "MPL-2.0"
 
 [dependencies]
