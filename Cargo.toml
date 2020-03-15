@@ -7,3 +7,12 @@ description = "A Rust encryption library compatible with googles tink encryption
 license = "MPL-2.0"
 
 [dependencies]
+
+[dependencies.rust-crypto]
+version = "^0.2"
+optional = true
+
+[features]
+default = ["crypto-rust-crypto"]
+
+crypto-rust-crypto = ["rust-crypto"]
