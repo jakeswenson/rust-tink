@@ -5,6 +5,7 @@ use crypto::aes::KeySize::KeySize256;
 use crate::aead::{Aead, AeadCiphertext, AeadPlaintext};
 use crate::TinkError;
 
+#[derive(Copy, Clone, Hash, Eq, PartialEq)]
 struct RustCryptoAead;
 
 impl Aead for RustCryptoAead {

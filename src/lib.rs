@@ -1,5 +1,7 @@
-use crate::keysets::ReadError;
 use std::fmt::{self, Display, Formatter};
+
+use crate::keysets::ReadError;
+use crate::protos::tink::key_data::KeyMaterialType;
 
 #[derive(Debug)]
 pub enum TinkError {
@@ -9,7 +11,7 @@ pub enum TinkError {
 
 impl std::error::Error for TinkError {}
 
-pub struct TinkConfige {}
+pub struct TinkConfig {}
 
 pub trait TinkProvider {
     fn aeads() -> Vec<Box<dyn aead::Aead>>;
@@ -23,6 +25,20 @@ impl Display for TinkError {
         }
     }
 }
+
+pub trait KeyTypeManager {
+    fn key_type(&self) -> &'static str;
+    fn version(&self) -> i32;
+    fn key_material_type(&self) -> KeyMaterialType;
+
+    fn parse_key<B>(byte_buffer: B) -> Self
+    where
+        B: prost::bytes::Buf;
+
+    fn validate_key(key: &Self) -> Result<(), TinkError>;
+}
+
+pub struct KeyManager(&'static str, i32, KeyMaterialType);
 
 pub mod aead;
 pub mod keysets;
