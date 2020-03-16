@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 
 use crate::keysets::ReadError;
@@ -7,6 +8,8 @@ use crate::protos::tink::key_data::KeyMaterialType;
 pub enum TinkError {
     DecryptionError,
     KeysetReadError(ReadError),
+    ProtobufError,
+    UnspecifiedError(Box<dyn Error>),
 }
 
 impl std::error::Error for TinkError {}
@@ -22,6 +25,8 @@ impl Display for TinkError {
         match self {
             TinkError::DecryptionError => write!(f, "DecryptionError"),
             TinkError::KeysetReadError(read_error) => write!(f, "{:?}", read_error),
+            TinkError::ProtobufError => write!(f, "ProtobufError"),
+            TinkError::UnspecifiedError(error) => write!(f, "{}", error),
         }
     }
 }
@@ -30,15 +35,27 @@ pub trait KeyTypeManager {
     fn key_type(&self) -> &'static str;
     fn version(&self) -> i32;
     fn key_material_type(&self) -> KeyMaterialType;
-
-    fn parse_key<B>(byte_buffer: B) -> Self
-    where
-        B: prost::bytes::Buf;
-
-    fn validate_key(key: &Self) -> Result<(), TinkError>;
 }
 
-pub struct KeyManager(&'static str, i32, KeyMaterialType);
+pub struct KeyManager {
+    type_url: &'static str,
+    version: i32,
+    key_material_type: KeyMaterialType,
+}
+
+impl KeyTypeManager for KeyManager {
+    fn key_type(&self) -> &'static str {
+        self.type_url
+    }
+
+    fn version(&self) -> i32 {
+        self.version
+    }
+
+    fn key_material_type(&self) -> KeyMaterialType {
+        self.key_material_type.clone()
+    }
+}
 
 pub mod aead;
 pub mod keysets;
