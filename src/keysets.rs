@@ -44,7 +44,13 @@ impl<T: Buf> KeysetReader for BinaryKeysetReader<T> {
         Ok(EncryptedKeyset::decode(self.0)?)
     }
 }
-
+/// A `KeysetHandle` provides abstracted access to `Keyset`, to limit the exposure of actual
+///  protocol buffers that hold sensitive key material.
+///
+/// This class allows reading and writing encrypted keysets. Users that want to read or write can
+///  use the restricted API `CleartextKeysetHandle`. Users can also load keysets that don't
+///  contain any secret key material with `NoSecretKeysetHandle`.
+///
 pub struct KeysetHandle {
     keyset: Keyset,
 }
