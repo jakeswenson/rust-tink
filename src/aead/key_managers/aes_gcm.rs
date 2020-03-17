@@ -38,7 +38,7 @@ impl KeyFactory for AesGcmFactory {
 
 impl KeyTypeManager for AesGcm {
   type Factory = AesGcmFactory;
-  type Key = <AesGcmFactory as KeyFactory>::Key;
+  type Key = Self::Factory::Key;
   type KeyFormat = <AesGcmFactory as KeyFactory>::KeyFormat;
   const KEY_TYPE: &'static str = "type.googleapis.com/google.crypto.tink.AesGcmKey";
   const VERSION: i32 = 0;
