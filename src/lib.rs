@@ -1,60 +1,42 @@
-use std::error::Error;
-use std::fmt::{self, Display, Formatter};
+pub(crate) use prost::bytes::Buf;
+use prost::Message;
 
-use crate::keysets::ReadError;
+pub use errors::TinkError;
+
 use crate::protos::tink::key_data::KeyMaterialType;
 
-#[derive(Debug)]
-pub enum TinkError {
-    DecryptionError,
-    KeysetReadError(ReadError),
-    ProtobufError,
-    UnspecifiedError(Box<dyn Error>),
-}
-
-impl std::error::Error for TinkError {}
+pub mod errors;
 
 pub struct TinkConfig {}
 
-pub trait TinkProvider {
-    fn aeads() -> Vec<Box<dyn aead::Aead>>;
+mod random {
+  fn rand_bytes(_num_bytes: usize) -> Vec<u8> {
+    unimplemented!();
+  }
 }
 
-impl Display for TinkError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            TinkError::DecryptionError => write!(f, "DecryptionError"),
-            TinkError::KeysetReadError(read_error) => write!(f, "{:?}", read_error),
-            TinkError::ProtobufError => write!(f, "ProtobufError"),
-            TinkError::UnspecifiedError(error) => write!(f, "{}", error),
-        }
-    }
+pub trait KeyFactory {
+  type Key: Message;
+  type KeyFormat: Message;
+
+  fn validate_key_format(key_format: &Self::KeyFormat) -> Result<(), TinkError>;
+  fn parse_key_format<B: Buf>(bytes: B) -> Result<Self::KeyFormat, TinkError>;
+  fn create_key(key_format: &Self::KeyFormat) -> Self::Key;
 }
 
 pub trait KeyTypeManager {
-    fn key_type(&self) -> &'static str;
-    fn version(&self) -> i32;
-    fn key_material_type(&self) -> KeyMaterialType;
-}
+  type Factory: KeyFactory<Key = Self::Key, KeyFormat = Self::KeyFormat>;
+  type Key: Message;
+  type KeyFormat: Message;
 
-pub struct KeyManager {
-    type_url: &'static str,
-    version: i32,
-    key_material_type: KeyMaterialType,
-}
+  const KEY_TYPE: &'static str;
 
-impl KeyTypeManager for KeyManager {
-    fn key_type(&self) -> &'static str {
-        self.type_url
-    }
+  const VERSION: i32;
 
-    fn version(&self) -> i32 {
-        self.version
-    }
+  const KEY_MATERIAL_TYPE: KeyMaterialType;
 
-    fn key_material_type(&self) -> KeyMaterialType {
-        self.key_material_type.clone()
-    }
+  fn validate_key(key: &Self::Key) -> Result<(), TinkError>;
+  fn parse_key<B: Buf>(bytes: B) -> Result<Self::Key, TinkError>;
 }
 
 pub mod aead;
@@ -65,8 +47,8 @@ pub mod signature;
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+  #[test]
+  fn it_works() {
+    assert_eq!(2 + 2, 4);
+  }
 }
