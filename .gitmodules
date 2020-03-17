@@ -1,0 +1,3 @@
+[submodule "tink"]
+	path = tink
+	url = git@github.com:google/tink.git

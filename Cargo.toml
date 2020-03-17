@@ -6,4 +6,20 @@ edition = "2018"
 description = "A Rust encryption library compatible with googles tink encryption library"
 license = "MPL-2.0"
 
+build = "build.rs"
+
 [dependencies]
+prost = "^0.6"
+prost-types = "^0.6" # for well-known types
+
+[build-dependencies]
+prost-build = { version = "^0.6" }
+
+[dependencies.rust-crypto]
+version = "^0.2"
+optional = true
+
+[features]
+default = ["rust-crypto-aead"]
+
+"rust-crypto-aead" = ["rust-crypto"]
